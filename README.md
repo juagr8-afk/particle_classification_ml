@@ -2,7 +2,7 @@
 
 ---
 
-## 2️⃣ README.md for Z vs Non-Z Classification
+## README.md for Z vs Non-Z Classification
 
 ```markdown
 # Z vs Non-Z Classification in Dielectron Events (CERN)
