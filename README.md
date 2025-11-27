@@ -34,7 +34,6 @@ This project implements a **binary classification pipeline** to identify events 
 |--------------------|---------|---------|
 | Logistic Regression | –       | –       |
 | Random Forest       | –       | –       |
-| CNN-1D              | –       | –       |
 
 > Metrics are saved in `classification_metrics_pkl.csv`, and confusion matrices in `*_confusion_pkl.png`.
 
