@@ -32,8 +32,8 @@ This project implements a **binary classification pipeline** to identify events 
 
 | Model               | Accuracy | F1 Score |
 |--------------------|---------|---------|
-| Logistic Regression | –       | –       |
-| Random Forest       | –       | –       |
+| Logistic Regression | 0.954561    |   0.660434    |
+| Random Forest       | 0.966271    |    0.753475   |
 
 > Metrics are saved in `classification_metrics_pkl.csv`, and confusion matrices in `*_confusion_pkl.png`.
 
