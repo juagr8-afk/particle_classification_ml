@@ -67,11 +67,11 @@ num_cols = X.select_dtypes(include=[np.number]).columns
 imputer = SimpleImputer(strategy='mean')
 X[num_cols] = imputer.fit_transform(X[num_cols])
 
-# Save scaler and imputer
+# Scale data
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X[num_cols])
 
-# Save scaler e imputer
+# Save scaler and imputer
 joblib.dump(imputer, "imputer_z_csv.joblib")
 joblib.dump(scaler, "scaler_z_csv.joblib")
 
