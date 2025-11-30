@@ -14,10 +14,6 @@ from sklearn.metrics import accuracy_score, f1_score, confusion_matrix, Confusio
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Conv1D, Flatten, Dropout
-from tensorflow.keras.callbacks import EarlyStopping
-
 
 RND = 42
 TEST_SIZE = 0.2
