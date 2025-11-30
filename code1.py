@@ -58,38 +58,40 @@ print(f"Class distribution: {df['Z_class'].value_counts()}")
 y = df['Z_class'].values
 X = df.drop(columns=['M','Z_class'])
 
+# Split train/test first to avoid data leakage
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=TEST_SIZE, random_state=RND, stratify=y
+)
+print("Split train/test:", X_train.shape, X_test.shape)
+
 # Imputation of NaNs 
 num_cols = X.select_dtypes(include=[np.number]).columns
 imputer = SimpleImputer(strategy='mean')
-X[num_cols] = imputer.fit_transform(X[num_cols])
+X_train_imputed = imputer.fit_transform(X_train[num_cols])
+X_test_imputed = imputer.transform(X_test[num_cols])
 
-# Scale data
+# Scale training data
 scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X[num_cols])
+X_train_scaled = scaler.fit_transform(X_train_imputed)
+X_test_scaled = scaler.transform(X_test_imputed)
 
 # Save scaler and imputer
 joblib.dump(imputer, "imputer_z_csv.joblib")
 joblib.dump(scaler, "scaler_z_csv.joblib")
-
-# Split train/test 
-X_train, X_test, y_train, y_test = train_test_split(
-    X_scaled, y, test_size=TEST_SIZE, random_state=RND, stratify=y
-)
-print("Split train/test:", X_train.shape, X_test.shape)
 
 
 results = {}
 
 # 1) Logistic Regression
 lr = LogisticRegression(max_iter=1000, random_state=RND)
-lr.fit(X_train, y_train)
-pred_lr = lr.predict(X_test)
+lr.fit(X_train_scaled, y_train)
+pred_lr = lr.predict(X_test_scaled)
 results['LogisticRegression'] = (accuracy_score(y_test, pred_lr), f1_score(y_test, pred_lr))
 
 # 2) Random Forest
 rf = RandomForestClassifier(n_estimators=200, max_depth=10, random_state=RND, n_jobs=-1)
-rf.fit(X_train, y_train)
-pred_rf = rf.predict(X_test)
+rf.fit(X_train_scaled, y_train)
+pred_rf = rf.predict(X_test_scaled)
 results['RandomForest'] = (accuracy_score(y_test, pred_rf), f1_score(y_test, pred_rf))
 
 # results
