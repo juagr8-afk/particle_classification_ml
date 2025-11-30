@@ -21,7 +21,7 @@ This project implements a **binary classification pipeline** to identify events 
 
 ## Preprocessing
 
-1. Load all `.pkl` files and concatenate into a single DataFrame  
+1. Load all `.csv` files and concatenate into a single DataFrame  
 2. Remove rows with `NaN` in `M`  
 3. Create binary target `Z_class` (1 = Z, 0 = Non-Z)  
 4. Impute NaNs in numeric features using the **mean**  
@@ -35,12 +35,6 @@ This project implements a **binary classification pipeline** to identify events 
 | Logistic Regression | 0.954561    |   0.660434    |
 | Random Forest       | 0.966271    |    0.753475   |
 
-> Metrics are saved in `classification_metrics_pkl.csv`, and confusion matrices in `*_confusion_pkl.png`.
+> Metrics are saved once the code is executed.
 
-## Usage
 
-1. Place `.pkl` files in the folder `pkl_data/`  
-2. Run:
-
-```bash
-python classify_cern_z_pkl.py
