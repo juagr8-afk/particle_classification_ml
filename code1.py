@@ -18,82 +18,70 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Conv1D, Flatten, Dropout
 from tensorflow.keras.callbacks import EarlyStopping
 
-# ---------------- CONFIG ----------------
+
 RND = 42
 TEST_SIZE = 0.2
 
-# ---------------------------------------
-
-# -------- Subir archivo ZIP --------
-print("=== SUBIR ARCHIVO ZIP CON CSVs ===")
-print("Por favor, sube tu archivo ZIP que contiene los CSVs")
+print("Upload zip file with csvs")
 
 try:
     from google.colab import files
-    print("Entorno: Google Colab")
     uploaded = files.upload()
     zip_filename = list(uploaded.keys())[0]
-    print(f"Archivo subido: {zip_filename}")
+    print(f"Uploaded doc: {zip_filename}")
 except:
-    print("Entorno: Local")
-    zip_filename = input("Introduce la ruta completa del archivo ZIP: ")
+    zip_filename = input("Introduce file directory: ")
 
-# -------- Cargar desde ZIP --------
-if not os.path.exists(zip_filename):
-    raise FileNotFoundError(f"No se encontró el archivo {zip_filename}")
 
 df_list = []
 
 with zipfile.ZipFile(zip_filename, 'r') as zip_ref:
-    # Listar todos los archivos CSV en el ZIP
     csv_files = [f for f in zip_ref.namelist() if f.endswith('.csv')]
     
     if len(csv_files) == 0:
-        raise FileNotFoundError(f"No se encontraron archivos CSV en {zip_filename}")
+        raise FileNotFoundError(f"No csv files in {zip_filename}")
+
     
-    print(f"Encontrados {len(csv_files)} archivos CSV en el ZIP")
-    
-    # Cargar cada CSV
+    # load every CSV
     for i, csv_file in enumerate(csv_files):
         with zip_ref.open(csv_file) as f:
-            # Leer el contenido y cargarlo como DataFrame
             df_temp = pd.read_csv(f)
             df_list.append(df_temp)
-            print(f"Cargado ({i+1}/{len(csv_files)}): {csv_file} - Forma: {df_temp.shape}")
+            print(f"Loaded ({i+1}/{len(csv_files)}): {csv_file} - Shape: {df_temp.shape}")
 
 df = pd.concat(df_list, ignore_index=True)
-print(f"\nTodos los archivos cargados, forma total: {df.shape}")
+print(f"\nAll docs loaded, shape: {df.shape}")
 
-# -------- Crear target binario --------
-# Clase 1: Z (80 <= M <= 100), Clase 0: No-Z
-df = df[~df["M"].isna()].copy()  # eliminar NaNs en M
+# create binary target
+# Class 1: Z (80 <= M <= 100), Class 0: No-Z
+df = df[~df["M"].isna()].copy()  
 df['Z_class'] = np.where((df['M'] >= 80) & (df['M'] <= 100), 1, 0)
 
-print(f"Distribución de clases: {df['Z_class'].value_counts()}")
+print(f"Class distribution: {df['Z_class'].value_counts()}")
 
 y = df['Z_class'].values
 X = df.drop(columns=['M','Z_class'])
 
-# -------- Imputación de NaNs --------
+# Imputation of NaNs 
 num_cols = X.select_dtypes(include=[np.number]).columns
 imputer = SimpleImputer(strategy='mean')
 X[num_cols] = imputer.fit_transform(X[num_cols])
 
-# -------- Escalado --------
+# Save scaler and imputer
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X[num_cols])
 
-# Guardar scaler e imputador
+# Save scaler e imputer
 joblib.dump(imputer, "imputer_z_csv.joblib")
 joblib.dump(scaler, "scaler_z_csv.joblib")
 
-# -------- Split train/test --------
+# Split train/test 
 X_train, X_test, y_train, y_test = train_test_split(
     X_scaled, y, test_size=TEST_SIZE, random_state=RND, stratify=y
 )
 print("Split train/test:", X_train.shape, X_test.shape)
 
-# -------- Modelos --------
+
 results = {}
 
 # 1) Logistic Regression
@@ -108,15 +96,13 @@ rf.fit(X_train, y_train)
 pred_rf = rf.predict(X_test)
 results['RandomForest'] = (accuracy_score(y_test, pred_rf), f1_score(y_test, pred_rf))
 
-# -------- Resultados --------
+# results
 res_df = pd.DataFrame(results, index=['Accuracy','F1']).T
-print("\n" + "="*50)
-print("RESULTADOS:")
-print("="*50)
+print("RESULTS:")
 print(res_df)
 res_df.to_csv("classification_metrics_csv.csv")
 
-# -------- Matriz de Confusión --------
+# confusion matrix
 for model_name, pred in zip(['LogisticRegression','RandomForest'],
                             [pred_lr, pred_rf]):
     cm = confusion_matrix(y_test, pred)
@@ -126,12 +112,9 @@ for model_name, pred in zip(['LogisticRegression','RandomForest'],
     plt.savefig(f"{model_name}_confusion_csv.png", dpi=150)
     plt.close()
 
-print("\n" + "="*50)
-print("Pipeline completo finalizado!")
-print("Archivos generados:")
+print("Documents created:")
 print("- classification_metrics_csv.csv")
 print("- LogisticRegression_confusion_csv.png") 
 print("- RandomForest_confusion_csv.png")
 print("- imputer_z_csv.joblib")
 print("- scaler_z_csv.joblib")
-print("="*50)
