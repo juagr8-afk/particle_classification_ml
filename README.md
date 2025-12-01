@@ -9,7 +9,7 @@ This project implements a **binary classification pipeline** to identify events 
 
 ## Dataset
 
-- `.pkl` files of particle collisions  
+- Taken from Kaggle: Cern Electron Collision Data. CSV file.
 - Main columns:
   - `E1`, `E2`
   - `px1, py1, pz1, px2, py2, pz2`
