@@ -21,14 +21,14 @@ This project implements a **binary classification pipeline** to identify events 
 3. Create binary target `Z_class` (1 = Zee, 0 = Zmumu)  
 4. Impute NaNs in numeric features using the **mean**  
 5. Scale features using `StandardScaler`  
-6. Train/test split 80/20 with stratification
+6. Train/test split 80/20 
 
 ## Trained Models
 
 | Model               | Accuracy | F1 Score |
 |--------------------|---------|---------|
-| Logistic Regression |     |      |
-| Random Forest       |    |       |
+| Logistic Regression |  0.59775  |  0.62327  |
+| Random Forest       |  0.92925  |  0.93062  |
 
 > Metrics are saved once the code is executed.
 
