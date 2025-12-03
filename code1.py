@@ -42,20 +42,19 @@ df = pd.concat(df_list, ignore_index=True)
 print(f"\nAll files loaded. Total shape: {df.shape}")
 
 
-# Create binary target using the 'class' column
+# Create binary target using the class column
 # Class 1: Zee, Class 0: Zmumu
 class_mapping = {'Zee': 1, 'Zmumu': 0}
 df['target_class'] = df['class'].map(class_mapping)
 
 # Separate features and target
 y = df['target_class'].values
-X = df.drop(columns=['class', 'target_class'])  # Remove unused columns
+X = df.drop(columns=['class', 'target_class'])  
 
 
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=TEST_SIZE, random_state=RND, stratify=y
 )
-print(f"\nTrain/test split: Train {X_train.shape}, Test {X_test.shape}")
 
 # Imputation of missing values
 num_cols = X.select_dtypes(include=[np.number]).columns
