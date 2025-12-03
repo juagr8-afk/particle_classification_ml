@@ -102,9 +102,8 @@ for model_name, pred in zip(['LogisticRegression','RandomForest'],
     plt.savefig(f"{model_name}_confusion_zee_zmumu.png", dpi=150)
     plt.close()
 
-print("\nCreated files:")
+print("\nFiles:")
 print("- classification_metrics_zee_zmumu.csv")
 print("- LogisticRegression_confusion_zee_zmumu.png")
 print("- RandomForest_confusion_zee_zmumu.png")
-print("- imputer_zee_zmumu.joblib")
-print("- scaler_zee_zmumu.joblib")
+
