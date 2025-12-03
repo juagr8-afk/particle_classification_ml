@@ -1,12 +1,8 @@
 import numpy as np
 import pandas as pd
-import glob
 import joblib
 import matplotlib.pyplot as plt
 import zipfile
-import os
-from io import StringIO
-
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
@@ -14,31 +10,28 @@ from sklearn.metrics import accuracy_score, f1_score, confusion_matrix, Confusio
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 
-
 RND = 42
 TEST_SIZE = 0.2
 
-print("Upload zip file with csvs")
+print("Upload zip file with CSV files")
 
 try:
     from google.colab import files
     uploaded = files.upload()
     zip_filename = list(uploaded.keys())[0]
-    print(f"Uploaded doc: {zip_filename}")
+    print(f"Uploaded file: {zip_filename}")
 except:
-    zip_filename = input("Introduce file directory: ")
-
+    zip_filename = input("Enter file directory: ")
 
 df_list = []
 
 with zipfile.ZipFile(zip_filename, 'r') as zip_ref:
     csv_files = [f for f in zip_ref.namelist() if f.endswith('.csv')]
-    
-    if len(csv_files) == 0:
-        raise FileNotFoundError(f"No csv files in {zip_filename}")
 
-    
-    # load every CSV
+    if len(csv_files) == 0:
+        raise FileNotFoundError(f"No CSV files found in {zip_filename}")
+
+    # Load each CSV file
     for i, csv_file in enumerate(csv_files):
         with zip_ref.open(csv_file) as f:
             df_temp = pd.read_csv(f)
@@ -46,38 +39,38 @@ with zipfile.ZipFile(zip_filename, 'r') as zip_ref:
             print(f"Loaded ({i+1}/{len(csv_files)}): {csv_file} - Shape: {df_temp.shape}")
 
 df = pd.concat(df_list, ignore_index=True)
-print(f"\nAll docs loaded, shape: {df.shape}")
+print(f"\nAll files loaded. Total shape: {df.shape}")
 
-# create binary target
-# Class 1: Z (80 <= M <= 100), Class 0: No-Z
-df = df[~df["M"].isna()].copy()  
-df['Z_class'] = np.where((df['M'] >= 80) & (df['M'] <= 100), 1, 0)
 
-print(f"Class distribution: {df['Z_class'].value_counts()}")
+# Create binary target using the 'class' column
+# Class 1: Zee, Class 0: Zmumu
+class_mapping = {'Zee': 1, 'Zmumu': 0}
+df['target_class'] = df['class'].map(class_mapping)
 
-y = df['Z_class'].values
-X = df.drop(columns=['M','Z_class'])
+# Separate features and target
+y = df['target_class'].values
+X = df.drop(columns=['class', 'target_class'])  # Remove unused columns
 
-# Split train/test first to avoid data leakage
+
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=TEST_SIZE, random_state=RND, stratify=y
 )
-print("Split train/test:", X_train.shape, X_test.shape)
+print(f"\nTrain/test split: Train {X_train.shape}, Test {X_test.shape}")
 
-# Imputation of NaNs 
+# Imputation of missing values
 num_cols = X.select_dtypes(include=[np.number]).columns
 imputer = SimpleImputer(strategy='mean')
 X_train_imputed = imputer.fit_transform(X_train[num_cols])
 X_test_imputed = imputer.transform(X_test[num_cols])
 
-# Scale training data
+# Data scaling
 scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train_imputed)
 X_test_scaled = scaler.transform(X_test_imputed)
 
-# Save scaler and imputer
-joblib.dump(imputer, "imputer_z_csv.joblib")
-joblib.dump(scaler, "scaler_z_csv.joblib")
+# Save imputer and scaler
+joblib.dump(imputer, "imputer_zee_zmumu.joblib")
+joblib.dump(scaler, "scaler_zee_zmumu.joblib")
 
 
 results = {}
@@ -96,23 +89,23 @@ results['RandomForest'] = (accuracy_score(y_test, pred_rf), f1_score(y_test, pre
 
 # results
 res_df = pd.DataFrame(results, index=['Accuracy','F1']).T
-print("RESULTS:")
+print("\nRESULTS:")
 print(res_df)
-res_df.to_csv("classification_metrics_csv.csv")
+res_df.to_csv("classification_metrics_zee_zmumu.csv")
 
-# confusion matrix
+# Confusion matrices
 for model_name, pred in zip(['LogisticRegression','RandomForest'],
                             [pred_lr, pred_rf]):
     cm = confusion_matrix(y_test, pred)
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=[0,1])
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['Zmumu (0)','Zee (1)'])
     disp.plot(cmap=plt.cm.Blues)
-    plt.title(model_name)
-    plt.savefig(f"{model_name}_confusion_csv.png", dpi=150)
+    plt.title(f"{model_name} - Zee vs Zmumu")
+    plt.savefig(f"{model_name}_confusion_zee_zmumu.png", dpi=150)
     plt.close()
 
-print("Documents created:")
-print("- classification_metrics_csv.csv")
-print("- LogisticRegression_confusion_csv.png") 
-print("- RandomForest_confusion_csv.png")
-print("- imputer_z_csv.joblib")
-print("- scaler_z_csv.joblib")
+print("\nCreated files:")
+print("- classification_metrics_zee_zmumu.csv")
+print("- LogisticRegression_confusion_zee_zmumu.png")
+print("- RandomForest_confusion_zee_zmumu.png")
+print("- imputer_zee_zmumu.joblib")
+print("- scaler_zee_zmumu.joblib")
